@@ -1,19 +1,18 @@
 package com.yourdomain.azureblobstorage;
 
 import org.apache.cordova.*;
-import com.microsoft.azure.storage.CloudStorageAccount;
-import com.microsoft.azure.storage.blob.CloudBlobClient;
-import com.microsoft.azure.storage.blob.CloudBlobContainer;
-import com.microsoft.azure.storage.blob.CloudBlockBlob;
+import com.azure.storage.blob.*;
+import com.azure.storage.blob.models.*;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 public class AzureBlobStoragePlugin extends CordovaPlugin {
@@ -43,15 +42,19 @@ public class AzureBlobStoragePlugin extends CordovaPlugin {
 
     private void uploadFileInChunks(String filePath, String fileName, CallbackContext callbackContext) {
         try {
-            // Configure Azure Storage connection string or SAS token
-            String connectionString = "YOUR_AZURE_STORAGE_CONNECTION_STRING"; // Or your SAS token
-            CloudStorageAccount storageAccount = CloudStorageAccount.parse(connectionString);
-            CloudBlobClient blobClient = storageAccount.createCloudBlobClient();
-            CloudBlobContainer container = blobClient.getContainerReference("your-container-name");
+            // Create BlobServiceClient
+            String connectionString = "YOUR_AZURE_STORAGE_CONNECTION_STRING"; // Update with your connection string
+            BlobServiceClient blobServiceClient = new BlobServiceClientBuilder().connectionString(connectionString).buildClient();
+            BlobContainerClient containerClient = blobServiceClient.getBlobContainerClient("your-container-name");
 
+            // Ensure the container exists
+            containerClient.createIfNotExists();
+
+            // Open the file for reading
             File file = new File(filePath);
             long fileSize = file.length();
             int totalChunks = (int) Math.ceil((double) fileSize / CHUNK_SIZE);
+            List<String> blockIds = new ArrayList<>();
 
             for (int chunkIndex = 0; chunkIndex < totalChunks; chunkIndex++) {
                 int start = chunkIndex * CHUNK_SIZE;
@@ -59,13 +62,16 @@ public class AzureBlobStoragePlugin extends CordovaPlugin {
                 byte[] fileContent = readChunk(file, start, size);
 
                 // Generate a unique block ID
-                String blockId = UUID.randomUUID().toString();
-                CloudBlockBlob blockBlob = container.getBlockBlobReference(fileName);
-                blockBlob.uploadBlock(blockId, new ByteArrayInputStream(fileContent), fileContent.length);
+                String blockId = Base64.getEncoder().encodeToString(UUID.randomUUID().toString().getBytes());
+                blockIds.add(blockId);
+
+                // Upload the block
+                BlobClient blobClient = containerClient.getBlobClient(fileName);
+                blobClient.getBlockBlobClient().stageBlock(blockId, new ByteArrayInputStream(fileContent), fileContent.length);
             }
 
             // Commit the blocks to finalize the blob
-            blockBlob.commitBlockList(blockIds);
+            blobClient.getBlockBlobClient().commitBlockList(blockIds);
 
             callbackContext.success("File uploaded in chunks successfully");
         } catch (Exception e) {
@@ -74,15 +80,16 @@ public class AzureBlobStoragePlugin extends CordovaPlugin {
     }
 
     private byte[] readChunk(File file, int start, int size) throws IOException {
-        try (FileInputStream fis = new FileInputStream(file);
-             ByteArrayOutputStream bos = new ByteArrayOutputStream()) {
+        try (FileInputStream fis = new FileInputStream(file)) {
             byte[] buffer = new byte[size];
             fis.skip(start);
             int bytesRead = fis.read(buffer, 0, size);
             if (bytesRead > 0) {
-                bos.write(buffer, 0, bytesRead);
+                byte[] chunk = new byte[bytesRead];
+                System.arraycopy(buffer, 0, chunk, 0, bytesRead);
+                return chunk;
             }
-            return bos.toByteArray();
+            return new byte[0]; // Return empty byte array if nothing read
         }
     }
 }
