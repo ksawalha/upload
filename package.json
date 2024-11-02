@@ -22,14 +22,14 @@
       "ios"
     ],
     "plugins": {
-      "cordova-plugin-file": {}  // Required for file handling
+      "cordova-plugin-file": {}
     }
   },
   "dependencies": {
-    "@azure/storage-blob": "^12.0.0"  // Specify the version of Azure Storage SDK
+    "@azure/storage-blob": "^12.0.0"
   },
   "engines": {
     "cordova": ">=10.0.0"
   },
-  "main": "www/azureblobstorage.js"  // The main JavaScript file for the plugin
+  "main": "www/azureblobstorage.js"
 }
