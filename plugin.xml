@@ -1,0 +1,50 @@
+<plugin xmlns="http://apache.org/cordova/ns/plugins/1.0"
+        id="com.yourdomain.azureblobstorage"
+        version="1.0.0">
+    <name>AzureBlobStoragePlugin</name>
+    <description>Cordova Plugin for uploading files to Azure Blob Storage using Azure Storage Java V12 SDK</description>
+    <license>Apache 2.0</license>
+    <keywords>
+        azure
+        blob
+        storage
+        cordova
+    </keywords>
+
+    <platform name="android">
+        <config-file target="AndroidManifest.xml" parent="/*">
+            <uses-permission android:name="android.permission.INTERNET" />
+            <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+            <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+        </config-file>
+
+        <source-file src="src/android/AzureBlobStoragePlugin.java" target-dir="src/com/yourdomain/azureblobstorage" />
+        
+        <!-- Use Maven to include Azure Storage Java SDK V12 -->
+        <framework src="https://repo1.maven.org/maven2/com/azure/azure-storage-blob/12.14.0/azure-storage-blob-12.14.0.jar" target-dir="libs" />
+    </platform>
+
+    <platform name="ios">
+        <config-file target="*-Info.plist" parent="NSPhotoLibraryUsageDescription">
+            <string>This app requires access to your photo library to upload files.</string>
+        </config-file>
+        <config-file target="*-Info.plist" parent="NSCameraUsageDescription">
+            <string>This app requires access to your camera to capture photos.</string>
+        </config-file>
+        <config-file target="*-Info.plist" parent="NSMicrophoneUsageDescription">
+            <string>This app requires access to your microphone for video uploads.</string>
+        </config-file>
+        <config-file target="*-Info.plist" parent="NSLocationWhenInUseUsageDescription">
+            <string>This app requires access to your location for file uploads.</string>
+        </config-file>
+
+        <source-file src="src/ios/AzureBlobStoragePlugin.swift" target-dir="src/ios" />
+        
+        <!-- Use CocoaPods to include Azure Storage iOS SDK -->
+        <framework src="https://github.com/Azure/azure-storage-ios" />
+    </platform>
+
+    <js-module src="www/azureblobstorage.js" name="AzureBlobStorage">
+        <clobbers target="AzureBlobStorage" />
+    </js-module>
+</plugin>
