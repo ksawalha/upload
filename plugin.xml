@@ -20,15 +20,10 @@
 
         <source-file src="src/android/AzureBlobStoragePlugin.java" target-dir="src/com/karamsawalha/azureblobstorage" />
         
-        <!-- Use Maven to include Azure Storage Java SDK V12 -->
+        <!-- Declare the dependency for the Azure Storage Blob SDK -->
         <dependency>
-            <groupId>com.azure</groupId>
-            <artifactId>azure-storage-blob</artifactId>
-            <version>12.14.0</version>
+            <id>com.azure:azure-storage-blob:12.14.0</id>
         </dependency>
-
-        <!-- If needed, include a fallback for local JAR -->
-        <framework src="https://repo1.maven.org/maven2/com/azure/azure-storage-blob/12.14.0/azure-storage-blob-12.14.0.jar" target-dir="libs" />
     </platform>
 
     <platform name="ios">
@@ -47,8 +42,10 @@
 
         <source-file src="src/ios/AzureBlobStoragePlugin.swift" target-dir="src/ios" />
         
-        <!-- Use CocoaPods to include Azure Storage iOS SDK -->
-        <framework src="https://github.com/Azure/azure-storage-ios" />
+        <!-- Declare the dependency for the Azure Storage iOS SDK -->
+        <dependency>
+            <id>com.azure:azure-storage-ios</id>
+        </dependency>
     </platform>
 
     <js-module src="www/azureblobstorage.js" name="AzureBlobStorage">
