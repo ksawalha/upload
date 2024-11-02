@@ -18,7 +18,7 @@
             <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
         </config-file>
 
-        <source-file src="src/android/AzureBlobStoragePlugin.java" target-dir="src/com/yourdomain/azureblobstorage" />
+        <source-file src="src/android/AzureBlobStoragePlugin.java" target-dir="src/com/karamsawalha/azureblobstorage" />
         
         <!-- Use Maven to include Azure Storage Java SDK V12 -->
         <framework src="https://repo1.maven.org/maven2/com/azure/azure-storage-blob/12.14.0/azure-storage-blob-12.14.0.jar" target-dir="libs" />
