@@ -1,0 +1,35 @@
+{
+  "name": "cordova-plugin-azure-blob-storage",
+  "version": "1.0.0",
+  "description": "A Cordova plugin to upload files to Azure Blob Storage",
+  "keywords": [
+    "cordova",
+    "plugin",
+    "azure",
+    "blob",
+    "storage",
+    "file",
+    "upload"
+  ],
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ksawalha/upload.git"
+  },
+  "cordova": {
+    "platforms": [
+      "android",
+      "ios"
+    ],
+    "plugins": {
+      "cordova-plugin-file": {}  // Required for file handling
+    }
+  },
+  "dependencies": {
+    "@azure/storage-blob": "^12.0.0"  // Specify the version of Azure Storage SDK
+  },
+  "engines": {
+    "cordova": ">=10.0.0"
+  },
+  "main": "www/azureblobstorage.js"  // The main JavaScript file for the plugin
+}
