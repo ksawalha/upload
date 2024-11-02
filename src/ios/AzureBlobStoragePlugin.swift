@@ -19,11 +19,10 @@ import AzureStorageBlob
         }
 
         let callbackId = command.callbackId
-        
         let dispatchGroup = DispatchGroup()
         var uploadResults: [String] = []
         var errorMessages: [String] = []
-        
+
         for fileObj in filesArray {
             guard let filePath = fileObj["path"] as? String,
                   let fileName = fileObj["name"] as? String else { continue }
@@ -38,7 +37,7 @@ import AzureStorageBlob
                 dispatchGroup.leave()
             }
         }
-        
+
         dispatchGroup.notify(queue: .main) {
             if !uploadResults.isEmpty {
                 self.commandDelegate.send(CDVPluginResult(status: .OK, messageAs: uploadResults), callbackId: callbackId)
@@ -69,8 +68,8 @@ import AzureStorageBlob
                 let startIndex = currentChunkIndex * chunkSize
                 let endIndex = min(startIndex + chunkSize, fileData.count)
                 let chunk = fileData[startIndex..<endIndex]
-                
-                let blockID = UUID().uuidString.base64Encoded // Generate a unique block ID
+
+                let blockID = UUID().uuidString.data(using: .utf8)?.base64EncodedString() ?? "" // Generate a unique block ID
                 blockIDs.append(blockID)
 
                 // Upload the chunk as a block
