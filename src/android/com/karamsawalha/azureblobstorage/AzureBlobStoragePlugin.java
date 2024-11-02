@@ -1,4 +1,4 @@
-package com.yourdomain.azureblobstorage;
+package com.karamsawalha.azureblobstorage;
 
 import org.apache.cordova.*;
 import com.azure.storage.blob.*;
@@ -11,6 +11,7 @@ import org.json.JSONObject;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.ByteArrayInputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -23,13 +24,18 @@ public class AzureBlobStoragePlugin extends CordovaPlugin {
     public boolean execute(String action, JSONArray args, CallbackContext callbackContext) {
         if (action.equals("uploadDeviceFiles")) {
             try {
-                JSONArray filesArray = args.getJSONArray(0);
+                // Expecting args[0] to be a JSONObject containing files and the SAS token
+                JSONObject params = args.getJSONObject(0);
+                JSONArray filesArray = params.getJSONArray("files");
+                String sasToken = params.getString("sasToken");
+                String containerName = params.getString("containerName");
+
                 for (int i = 0; i < filesArray.length(); i++) {
                     JSONObject fileObj = filesArray.getJSONObject(i);
                     String path = fileObj.getString("path");
                     String name = fileObj.getString("name");
 
-                    uploadFileInChunks(path, name, callbackContext);
+                    uploadFileInChunks(path, name, sasToken, containerName, callbackContext);
                 }
             } catch (JSONException e) {
                 callbackContext.error("Error parsing JSON: " + e.getMessage());
@@ -40,12 +46,15 @@ public class AzureBlobStoragePlugin extends CordovaPlugin {
         }
     }
 
-    private void uploadFileInChunks(String filePath, String fileName, CallbackContext callbackContext) {
+    private void uploadFileInChunks(String filePath, String fileName, String sasToken, String containerName, CallbackContext callbackContext) {
         try {
-            // Create BlobServiceClient
-            String connectionString = "YOUR_AZURE_STORAGE_CONNECTION_STRING"; // Update with your connection string
-            BlobServiceClient blobServiceClient = new BlobServiceClientBuilder().connectionString(connectionString).buildClient();
-            BlobContainerClient containerClient = blobServiceClient.getBlobContainerClient("your-container-name");
+            // Create BlobServiceClient using SAS token
+            String accountName = "arabicschool"; // Update with your account name
+            BlobServiceClient blobServiceClient = new BlobServiceClientBuilder()
+                    .endpoint("https://" + accountName + ".blob.core.windows.net")
+                    .sasToken(sasToken)
+                    .buildClient();
+            BlobContainerClient containerClient = blobServiceClient.getBlobContainerClient(containerName);
 
             // Ensure the container exists
             containerClient.createIfNotExists();
