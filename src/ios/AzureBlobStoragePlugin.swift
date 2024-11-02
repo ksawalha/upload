@@ -9,7 +9,15 @@ import AzureStorageBlob
 
     @objc(uploadDeviceFiles:)
     func uploadDeviceFiles(command: CDVInvokedUrlCommand) {
-        let filesArray = command.arguments[0] as? [[String: Any]] ?? []
+        // Expecting command.arguments[0] to be a dictionary with files array, SAS token, and container name
+        guard let params = command.arguments[0] as? [String: Any],
+              let filesArray = params["files"] as? [[String: Any]],
+              let sasToken = params["sasToken"] as? String,
+              let containerName = params["containerName"] as? String else {
+            self.commandDelegate.send(CDVPluginResult(status: .ERROR, messageAs: "Invalid parameters"), callbackId: command.callbackId)
+            return
+        }
+
         let callbackId = command.callbackId
         
         let dispatchGroup = DispatchGroup()
@@ -21,7 +29,7 @@ import AzureStorageBlob
                   let fileName = fileObj["name"] as? String else { continue }
 
             dispatchGroup.enter()
-            self.uploadFileInChunks(filePath: filePath, fileName: fileName) { success, error in
+            self.uploadFileInChunks(filePath: filePath, fileName: fileName, sasToken: sasToken, containerName: containerName) { success, error in
                 if success {
                     uploadResults.append("\(fileName) uploaded successfully.")
                 } else if let error = error {
@@ -33,21 +41,20 @@ import AzureStorageBlob
         
         dispatchGroup.notify(queue: .main) {
             if !uploadResults.isEmpty {
-                self.commandDelegate.send(CDVPluginResult(status: CDVCommandStatus_OK, messageAs: uploadResults), callbackId: callbackId)
+                self.commandDelegate.send(CDVPluginResult(status: .OK, messageAs: uploadResults), callbackId: callbackId)
             }
             if !errorMessages.isEmpty {
-                self.commandDelegate.send(CDVPluginResult(status: CDVCommandStatus_ERROR, messageAs: errorMessages), callbackId: callbackId)
+                self.commandDelegate.send(CDVPluginResult(status: .ERROR, messageAs: errorMessages), callbackId: callbackId)
             }
         }
     }
 
-    private func uploadFileInChunks(filePath: String, fileName: String, completion: @escaping (Bool, Error?) -> Void) {
-        let connectionString = "YOUR_AZURE_STORAGE_CONNECTION_STRING"
-        let blobClient = try? AzureStorageBlob.BlobClient(connectionString: connectionString)
-        let containerName = "your-container-name"
+    private func uploadFileInChunks(filePath: String, fileName: String, sasToken: String, containerName: String, completion: @escaping (Bool, Error?) -> Void) {
+        // Create the BlobClient using the SAS token
+        let blobClient = try? AzureStorageBlob.BlobClient(sasToken: sasToken)
         let blob = blobClient?.container(name: containerName).blob(name: fileName)
 
-        guard let fileURL = URL(string: filePath) else {
+        guard let fileURL = URL(fileURLWithPath: filePath) else {
             completion(false, NSError(domain: "Invalid file path", code: -1, userInfo: nil))
             return
         }
