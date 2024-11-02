@@ -1,5 +1,5 @@
 <plugin xmlns="http://apache.org/cordova/ns/plugins/1.0"
-        id="com.yourdomain.azureblobstorage"
+        id="com.karamsawalha.azureblobstorage"
         version="1.0.0">
     <name>AzureBlobStoragePlugin</name>
     <description>Cordova Plugin for uploading files to Azure Blob Storage using Azure Storage Java V12 SDK</description>
