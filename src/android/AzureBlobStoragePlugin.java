@@ -13,12 +13,16 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.ByteArrayInputStream;
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class AzureBlobStoragePlugin extends CordovaPlugin {
 
     private static final int CHUNK_SIZE = 4 * 1024 * 1024; // 4 MB
+    private final ExecutorService executorService = Executors.newSingleThreadExecutor();
 
     @Override
     public boolean execute(String action, JSONArray args, CallbackContext callbackContext) {
@@ -35,7 +39,8 @@ public class AzureBlobStoragePlugin extends CordovaPlugin {
                     String path = fileObj.getString("path");
                     String name = fileObj.getString("name");
 
-                    uploadFileInChunks(path, name, sasToken, containerName, callbackContext);
+                    // Run upload in a background thread to avoid blocking the main thread
+                    executorService.submit(() -> uploadFileInChunks(path, name, sasToken, containerName, callbackContext));
                 }
             } catch (JSONException e) {
                 callbackContext.error("Error parsing JSON: " + e.getMessage());
@@ -64,18 +69,18 @@ public class AzureBlobStoragePlugin extends CordovaPlugin {
             long fileSize = file.length();
             int totalChunks = (int) Math.ceil((double) fileSize / CHUNK_SIZE);
             List<String> blockIds = new ArrayList<>();
+            BlobClient blobClient = containerClient.getBlobClient(fileName);
 
             for (int chunkIndex = 0; chunkIndex < totalChunks; chunkIndex++) {
                 int start = chunkIndex * CHUNK_SIZE;
                 int size = (int) Math.min(CHUNK_SIZE, fileSize - start);
                 byte[] fileContent = readChunk(file, start, size);
 
-                // Generate a unique block ID
+                // Generate a unique block ID (Base64 encoded)
                 String blockId = Base64.getEncoder().encodeToString(UUID.randomUUID().toString().getBytes());
                 blockIds.add(blockId);
 
                 // Upload the block
-                BlobClient blobClient = containerClient.getBlobClient(fileName);
                 blobClient.getBlockBlobClient().stageBlock(blockId, new ByteArrayInputStream(fileContent), fileContent.length);
             }
 
@@ -84,19 +89,18 @@ public class AzureBlobStoragePlugin extends CordovaPlugin {
 
             callbackContext.success("File uploaded in chunks successfully");
         } catch (Exception e) {
+            e.printStackTrace(); // Print the stack trace for easier debugging
             callbackContext.error("Error uploading file: " + e.getMessage());
         }
     }
 
     private byte[] readChunk(File file, int start, int size) throws IOException {
         try (FileInputStream fis = new FileInputStream(file)) {
-            byte[] buffer = new byte[size];
             fis.skip(start);
+            byte[] buffer = new byte[size];
             int bytesRead = fis.read(buffer, 0, size);
             if (bytesRead > 0) {
-                byte[] chunk = new byte[bytesRead];
-                System.arraycopy(buffer, 0, chunk, 0, bytesRead);
-                return chunk;
+                return (bytesRead == size) ? buffer : Arrays.copyOf(buffer, bytesRead);
             }
             return new byte[0]; // Return empty byte array if nothing read
         }
