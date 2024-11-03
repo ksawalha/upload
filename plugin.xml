@@ -1,4 +1,4 @@
-<plugin xmlns="http://apache.org/cordova/ns/plugins/1.0"
+<plugin xmlns="http://apache.org/cordova/ns/plugins/1.0" 
         id="com.karamsawalha.azureblobstorage"
         version="1.0.0">
     <name>AzureBlobStoragePlugin</name>
@@ -20,8 +20,8 @@
 
         <source-file src="src/android/AzureBlobStoragePlugin.java" target-dir="src/com/karamsawalha/azureblobstorage" />
         
-        <!-- Use Gradle to include Azure Storage Java SDK V12 -->
-        <framework src="https://repo1.maven.org/maven2/com/azure/azure-storage-blob/12.14.0/azure-storage-blob-12.14.0.jar" target-dir="libs" />
+        <!-- Reference Gradle dependency -->
+        <framework src="com.azure:azure-storage-blob:12.14.0" />
     </platform>
 
     <platform name="ios">
@@ -40,8 +40,8 @@
 
         <source-file src="src/ios/AzureBlobStoragePlugin.swift" target-dir="src/ios" />
         
-        <!-- Use CocoaPods to include Azure Storage iOS SDK -->
-        <pod src="https://github.com/Azure/azure-storage-ios.git" />
+        <!-- Reference Pod dependency -->
+        <pod name="AzureStorageBlob" />
     </platform>
 
     <js-module src="www/azureblobstorage.js" name="AzureBlobStorage">
