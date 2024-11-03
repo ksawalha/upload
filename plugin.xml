@@ -1,14 +1,15 @@
-<plugin xmlns="http://apache.org/cordova/ns/plugins/1.0" 
+<plugin xmlns="http://apache.org/cordova/ns/plugins/1.0"
         id="com.karamsawalha.azureblobstorage"
         version="1.0.0">
     <name>AzureBlobStoragePlugin</name>
-    <description>Cordova Plugin for uploading files to Azure Blob Storage using Azure Storage Java V12 SDK</description>
+    <description>Cordova Plugin for uploading files to Azure Blob Storage using Azure SDKs</description>
     <license>Apache 2.0</license>
     <keywords>
         azure
         blob
         storage
         cordova
+        outsystems
     </keywords>
 
     <platform name="android">
@@ -20,8 +21,10 @@
 
         <source-file src="src/android/AzureBlobStoragePlugin.java" target-dir="src/com/karamsawalha/azureblobstorage" />
         
-        <!-- Reference Gradle dependency -->
+        <!-- Gradle dependency for Azure Storage -->
         <framework src="com.azure:azure-storage-blob:12.14.0" />
+        <!-- Ensure compatibility with OutSystems by defining the minimum SDK version -->
+        <preference name="android-minSdkVersion" value="21" />
     </platform>
 
     <platform name="ios">
@@ -40,8 +43,11 @@
 
         <source-file src="src/ios/AzureBlobStoragePlugin.swift" target-dir="src/ios" />
         
-        <!-- Reference Pod dependency -->
-        <pod name="AzureStorageBlob" />
+        <!-- CocoaPod dependency -->
+        <pod name="AzureStorageBlob" version="12.1.0" />
+        
+        <!-- Specify Swift version -->
+        <preference name="UseSwiftLanguageVersion" value="5.9" />
     </platform>
 
     <js-module src="www/azureblobstorage.js" name="AzureBlobStorage">
