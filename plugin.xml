@@ -21,10 +21,8 @@
 
         <source-file src="src/android/AzureBlobStoragePlugin.java" target-dir="src/com/karamsawalha/azureblobstorage" />
         
-        <!-- Gradle dependency for Azure Storage -->
-        <framework src="com.azure:azure-storage-blob:12.14.0" />
-        <!-- Ensure compatibility with OutSystems by defining the minimum SDK version -->
-        <preference name="android-minSdkVersion" value="21" />
+        <!-- Reference Gradle dependency -->
+        <framework src="com.azure:azure-storage-blob:12.14.0" target-dir="libs" />
     </platform>
 
     <platform name="ios">
@@ -45,9 +43,6 @@
         
         <!-- CocoaPod dependency -->
         <pod name="AzureStorageBlob" version="12.1.0" />
-        
-        <!-- Specify Swift version -->
-        <preference name="UseSwiftLanguageVersion" value="5.9" />
     </platform>
 
     <js-module src="www/azureblobstorage.js" name="AzureBlobStorage">
